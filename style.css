@@ -275,14 +275,17 @@ body::before {
 }
 
 .controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 1rem;
     margin-bottom: 2rem;
 }
 
 .control-group {
     position: relative;
+    flex: 1 1 180px;
+    max-width: 200px;
 }
 
 .control-label {
@@ -330,8 +333,9 @@ body::before {
 }
 
 .generate-btn {
-    grid-column: 1 / -1;
-    padding: 1.25rem 2.5rem;
+    flex-basis: 100%;
+    max-width: 200px;
+    padding: 1rem 1.5rem;
     background: linear-gradient(135deg, var(--ai-purple) 0%, var(--ai-blue) 100%);
     color: white;
     border: none;
