@@ -80,10 +80,10 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
         createLoadingCard(i);
     }
 
-    // Stagger setting the image src so they start 3.5 seconds apart.
+    // Stagger setting the image src so they start 8 seconds apart.
     // This healthy delay completely avoids triggering Pollinations AI rate limits.
     for (let i = 0; i < quantity; i++) {
-        if (i > 0) await sleep(3500); // 3.5-second safety delay to avoid IP blocks
+        if (i > 0) await sleep(8000); // 8-second safety delay to avoid IP blocks
 
         const seed = Math.floor(Math.random() * 1000000);
         const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
@@ -124,7 +124,7 @@ function retryImageLoad(img, index, retriesLeft) {
     logDiagnosticError(`Image ${index + 1} load failed. Attempting retry (${4 - retriesLeft}/3)...`);
     
     if (retriesLeft > 0) {
-        // Wait 5 seconds before retrying to let rate limits settle
+        // Wait 10 seconds before retrying to let rate limits settle
         setTimeout(() => {
             try {
                 const urlObj = new URL(img.src);
@@ -138,7 +138,7 @@ function retryImageLoad(img, index, retriesLeft) {
                 logDiagnosticError(`Retry setup failed for Image ${index + 1}: ${e.message}`);
                 updateCardWithError(index);
             }
-        }, 5000);
+        }, 10000);
     } else {
         logDiagnosticError(`Image ${index + 1} failed after all retries.`);
         // Out of retries, show error state
