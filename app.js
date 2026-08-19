@@ -148,10 +148,37 @@ function updateCardWithError(index) {
         <div class="status-text error-state" style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.5rem;"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             <div style="font-size: 0.9rem; font-weight: 700; color: #f3f4f6; margin-bottom: 0.25rem;">Generation Failed</div>
-            <div style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-bottom: 1rem; max-width: 200px; line-height: 1.35;">Server timed out or rate limit reached.</div>
-            <button class="retry-btn" onclick="generateSingleImage(${index})" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25); transition: transform 0.2s, background 0.2s;">Try Again</button>
+            <div style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-bottom: 1rem; max-width: 200px; line-height: 1.35;">Server rate limit reached.</div>
+            
+            <div id="retry-container-${index}" style="width: 100%; display: flex; justify-content: center; align-items: center; height: 40px;">
+                <span id="countdown-${index}" style="font-size: 0.8rem; color: #ff8888; font-weight: 600; text-align: center;">Please wait 30s to retry...</span>
+            </div>
         </div>
     `;
+
+    // Start a 30-second cooldown countdown
+    let secondsLeft = 30;
+    const intervalId = setInterval(() => {
+        const countdownEl = document.getElementById(`countdown-${index}`);
+        // If the card has been cleared from the DOM (e.g. user started a new generation), stop the timer
+        if (!countdownEl) {
+            clearInterval(intervalId);
+            return;
+        }
+
+        secondsLeft--;
+        countdownEl.innerText = `Please wait ${secondsLeft}s to retry...`;
+
+        if (secondsLeft <= 0) {
+            clearInterval(intervalId);
+            const containerEl = document.getElementById(`retry-container-${index}`);
+            if (containerEl) {
+                containerEl.innerHTML = `
+                    <button class="retry-btn" onclick="generateSingleImage(${index})" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25); transition: transform 0.2s, background 0.2s;">Try Again</button>
+                `;
+            }
+        }
+    }, 1000);
 }
 
 async function generateSingleImage(index) {
