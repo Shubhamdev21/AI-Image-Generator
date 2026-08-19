@@ -59,7 +59,7 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
 
     // Create all loading cards upfront
     for (let i = 0; i < quantity; i++) {
-        createLoadingCard(i);
+        createLoadingCard(i, aspectRatio);
     }
 
     // Stagger setting the image src so they start 1.5 seconds apart.
@@ -84,10 +84,14 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // ================================
 // UI FUNCTIONS
 // ================================
-function createLoadingCard(index) {
+function createLoadingCard(index, aspectRatio) {
     const card = document.createElement("div");
     card.className = "img-card loading";
     card.id = `img-${index}`;
+    // Dynamically apply selected aspect-ratio to the card box
+    if (aspectRatio) {
+        card.style.aspectRatio = aspectRatio.replace(":", "/");
+    }
     card.innerHTML = `<div class="status-text">Loading image ${index + 1}...</div>`;
     galleryGrid.appendChild(card);
 }
