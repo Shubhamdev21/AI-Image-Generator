@@ -97,11 +97,27 @@ function updateCardWithImage(index, url) {
     // Keep the "loading" class on the card so it continues shimmering in the UI.
     // We set opacity: 0 initially to hide browser broken image icon/alt text while loading, and fade it in once loaded!
     card.innerHTML = `
-        <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" style="opacity: 0; transition: opacity 0.3s ease;" onload="this.style.opacity = 1; document.getElementById('img-${index}').classList.remove('loading')" onerror="retryImageLoad(this, ${index}, 3)" />
-        <button class="download-btn" onclick="downloadImage('${url}', ${index})" title="Download Image">
+        <div id="loader-${index}" class="status-text" style="position: absolute; z-index: 1; text-align: center; color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; padding: 1rem; width: 100%; box-sizing: border-box;">
+            &#10024; Generating image ${index + 1}...<br>
+            <span style="font-size: 0.75rem; opacity: 0.7; display: block; margin-top: 5px;">(Please wait 30-40 seconds)</span>
+        </div>
+        <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" style="opacity: 0; transition: opacity 0.3s ease; position: relative; z-index: 2;" onload="hideLoader(${index}, this)" onerror="retryImageLoad(this, ${index}, 3)" />
+        <button class="download-btn" onclick="downloadImage('${url}', ${index})" title="Download Image" style="z-index: 3;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         </button>
     `;
+}
+
+function hideLoader(index, img) {
+    img.style.opacity = 1;
+    const card = document.getElementById(`img-${index}`);
+    if (card) {
+        card.classList.remove('loading');
+    }
+    const loader = document.getElementById(`loader-${index}`);
+    if (loader) {
+        loader.remove();
+    }
 }
 
 function retryImageLoad(img, index, retriesLeft) {
