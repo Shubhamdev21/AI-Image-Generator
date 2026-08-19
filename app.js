@@ -246,6 +246,7 @@ async function downloadImage(url, index) {
 // DYNAMIC MODEL INFO
 // ================================
 const modelInfoText = document.querySelector(".model-info-text");
+const modelDescContent = document.querySelector(".model-desc-content");
 
 const modelDescriptions = {
     'flux1-dev': '💡 <b>Best for:</b> Photorealistic details, complex scene descriptions, and rendering clear embedded text inside images.',
@@ -258,8 +259,12 @@ const modelDescriptions = {
 
 function updateModelDescription() {
     const selected = modelSelect.value;
+    const desc = modelDescriptions[selected] || '';
     if (modelInfoText) {
-        modelInfoText.innerHTML = modelDescriptions[selected] || '';
+        modelInfoText.innerHTML = desc;
+    }
+    if (modelDescContent) {
+        modelDescContent.innerHTML = desc;
     }
 }
 
