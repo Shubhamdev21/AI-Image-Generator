@@ -96,9 +96,27 @@ function updateCardWithImage(index, url) {
     // Keep the "loading" class on the card so it continues shimmering in the UI.
     // We remove the class inside the onload event of the image element as soon as it's fully rendered by the browser!
     card.innerHTML = `
-        <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" onload="document.getElementById('img-${index}').classList.remove('loading')" onerror="updateCardWithError(${index})" />
+        <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" onload="document.getElementById('img-${index}').classList.remove('loading')" onerror="retryImageLoad(this, ${index}, 3)" />
         <button onclick="downloadImage('${url}', ${index})">Download</button>
     `;
+}
+
+function retryImageLoad(img, index, retriesLeft) {
+    if (retriesLeft > 0) {
+        // Wait 2.5 seconds before retrying to let rate limits settle
+        setTimeout(() => {
+            const urlObj = new URL(img.src);
+            // Change the seed to try generating a new variation (helps bypass caching and server locks)
+            urlObj.searchParams.set('seed', Math.floor(Math.random() * 1000000));
+            img.src = urlObj.toString();
+            
+            // Update the onerror attribute with one less retry
+            img.setAttribute('onerror', `retryImageLoad(this, ${index}, ${retriesLeft - 1})`);
+        }, 2500);
+    } else {
+        // Out of retries, show error state
+        updateCardWithError(index);
+    }
 }
 
 function updateCardWithError(index) {
