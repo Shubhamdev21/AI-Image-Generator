@@ -62,22 +62,15 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
         createLoadingCard(i);
     }
 
-    // Generate sequentially to respect Pollinations AI rate limits and avoid 429 errors
+    // Stagger setting the image src so they generate in parallel but start 1 second apart.
+    // This allows the browser to show loading progress natively and display images instantly as they load.
     for (let i = 0; i < quantity; i++) {
-        try {
-            const seed = Math.floor(Math.random() * 1000000);
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
+        if (i > 0) await sleep(1000); // 1-second delay to stagger requests and avoid rate limits
 
-            // Preload with retry logic in case of temporary rate limit or network error
-            await preloadImageWithRetry(imageUrl);
-            updateCardWithImage(i, imageUrl);
-
-            // Generous safety delay (3.5s) between requests to let the rate limit cool down
-            if (i < quantity - 1) await sleep(3500);
-
-        } catch (err) {
-            updateCardWithError(i);
-        }
+        const seed = Math.floor(Math.random() * 1000000);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
+        
+        updateCardWithImage(i, imageUrl);
     }
 
     updateButton(false);
@@ -86,31 +79,6 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
 
 // Small delay utility
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// ================================
-// PRELOAD IMAGE WITH RETRY & BACKOFF
-// ================================
-function preloadImage(url) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = url;
-    });
-}
-
-async function preloadImageWithRetry(url, retries = 3, delay = 4000) {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-            await preloadImage(url);
-            return;
-        } catch (err) {
-            if (attempt === retries) throw err;
-            await sleep(delay);
-            delay *= 1.5; // Exponential backoff on retries
-        }
-    }
-}
 
 // ================================
 // UI FUNCTIONS
@@ -125,9 +93,10 @@ function createLoadingCard(index) {
 
 function updateCardWithImage(index, url) {
     const card = document.getElementById(`img-${index}`);
-    card.classList.remove("loading");
+    // Keep the "loading" class on the card so it continues shimmering in the UI.
+    // We remove the class inside the onload event of the image element as soon as it's fully rendered by the browser!
     card.innerHTML = `
-        <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" />
+        <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" onload="document.getElementById('img-${index}').classList.remove('loading')" onerror="updateCardWithError(${index})" />
         <button onclick="downloadImage('${url}', ${index})">Download</button>
     `;
 }
