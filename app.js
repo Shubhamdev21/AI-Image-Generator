@@ -1,5 +1,5 @@
 // ================================
-// FREE IMAGE GENERATOR (PUTER AI)
+// FREE IMAGE GENERATOR (POLLINATIONS AI)
 // ================================
 const generateForm = document.querySelector(".generate-form");
 const galleryGrid = document.querySelector(".gallery-grid");
@@ -11,15 +11,39 @@ const aspectRatioSelect = document.querySelector(".aspect-ratio");
 
 let isGenerating = false;
 
-// Map HTML model values to Puter AI model names
+// Map HTML model values to Pollinations AI model names
 const modelMapping = {
-    'flux1-dev': 'black-forest-labs/flux-1-dev',
-    'flux1-schnell': 'black-forest-labs/flux-1-schnell',
-    'stable-diffusion-xl': 'stability-ai/stable-diffusion-xl',
-    'stable-diffusion-v15': 'gpt-image-2',
-    'stable-diffusion-3': 'stability-ai/stable-diffusion-3',
-    'openjourney': 'gpt-image-2'
+    'flux1-dev': 'flux',
+    'flux1-schnell': 'flux',
+    'stable-diffusion-xl': 'flux',
+    'stable-diffusion-v15': 'dreamshaper',
+    'stable-diffusion-3': 'flux',
+    'openjourney': 'midijourney'
 };
+
+// Calculate pixel dimensions from aspect ratio options (optimized for speed and rate limits)
+function getDimensions(aspectRatio) {
+    switch (aspectRatio) {
+        case "1:1":
+            return { width: 512, height: 512 };
+        case "16:9":
+            return { width: 768, height: 432 };
+        case "9:16":
+            return { width: 432, height: 768 };
+        case "4:3":
+            return { width: 640, height: 480 };
+        case "3:4":
+            return { width: 480, height: 640 };
+        case "21:9":
+            return { width: 800, height: 340 };
+        case "3:2":
+            return { width: 768, height: 512 };
+        case "2:3":
+            return { width: 512, height: 768 };
+        default:
+            return { width: 512, height: 512 };
+    }
+}
 
 // ================================
 // GENERATE IMAGES
@@ -30,45 +54,31 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
     updateButton(true);
     galleryGrid.innerHTML = "";
 
-    // Enhance prompt with aspect ratio description since Puter applies aspect ratios textually
-    let enhancedPrompt = prompt;
-    if (aspectRatio && aspectRatio !== "1:1") {
-        enhancedPrompt += `, aspect ratio ${aspectRatio}`;
-    }
+    const { width, height } = getDimensions(aspectRatio);
+    const apiModel = modelMapping[model] || "flux";
 
     // Create all loading cards upfront
     for (let i = 0; i < quantity; i++) {
         createLoadingCard(i);
     }
 
-    // Generate all images concurrently in parallel for maximum speed
-    const promises = Array.from({ length: quantity }).map(async (_, i) => {
+    // Generate sequentially to respect Pollinations AI rate limits and avoid 429 errors
+    for (let i = 0; i < quantity; i++) {
         try {
-            // Stagger the calls slightly to play nice
-            await sleep(i * 100);
+            const seed = Math.floor(Math.random() * 1000000);
+            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
 
-            let imageElement;
-            const puterModel = modelMapping[model];
-
-            try {
-                if (puterModel) {
-                    imageElement = await puter.ai.txt2img(enhancedPrompt, { model: puterModel });
-                } else {
-                    imageElement = await puter.ai.txt2img(enhancedPrompt);
-                }
-            } catch (err) {
-                // Fallback to default high-speed model if specific model fails
-                imageElement = await puter.ai.txt2img(enhancedPrompt);
-            }
-
-            const imageUrl = imageElement.src;
+            // Preload with retry logic in case of temporary rate limit or network error
+            await preloadImageWithRetry(imageUrl);
             updateCardWithImage(i, imageUrl);
+
+            // Generous safety delay (3.5s) between requests to let the rate limit cool down
+            if (i < quantity - 1) await sleep(3500);
+
         } catch (err) {
             updateCardWithError(i);
         }
-    });
-
-    await Promise.all(promises);
+    }
 
     updateButton(false);
     isGenerating = false;
@@ -76,6 +86,31 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
 
 // Small delay utility
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// ================================
+// PRELOAD IMAGE WITH RETRY & BACKOFF
+// ================================
+function preloadImage(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+    });
+}
+
+async function preloadImageWithRetry(url, retries = 3, delay = 4000) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            await preloadImage(url);
+            return;
+        } catch (err) {
+            if (attempt === retries) throw err;
+            await sleep(delay);
+            delay *= 1.5; // Exponential backoff on retries
+        }
+    }
+}
 
 // ================================
 // UI FUNCTIONS
