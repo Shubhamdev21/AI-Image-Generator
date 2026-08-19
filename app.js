@@ -57,24 +57,28 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
     const { width, height } = getDimensions(aspectRatio);
     const apiModel = modelMapping[model] || "flux";
 
+    // Create all loading cards upfront
     for (let i = 0; i < quantity; i++) {
         createLoadingCard(i);
+    }
 
+    // Generate and load all images concurrently to significantly speed up loading times
+    const promises = Array.from({ length: quantity }).map(async (_, i) => {
         try {
-            // Generate a random seed for each image in the set so they are all different and unique
+            // Slight delay before launching each request to stagger them and avoid rate limits
+            await sleep(i * 150);
+
             const seed = Math.floor(Math.random() * 1000000);
             const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
 
             await preloadImage(imageUrl);
             updateCardWithImage(i, imageUrl);
-
-            // Small delay between images to avoid rate limits
-            if (i < quantity - 1) await sleep(300);
-
         } catch (err) {
             updateCardWithError(i);
         }
-    }
+    });
+
+    await Promise.all(promises);
 
     updateButton(false);
     isGenerating = false;
