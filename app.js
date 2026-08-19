@@ -1,22 +1,4 @@
 // ================================
-// DIAGNOSTIC ERROR LOGGER
-// ================================
-window.addEventListener("error", function (e) {
-    logDiagnosticError(`Runtime Error: ${e.message} at ${e.filename || 'script'}:${e.lineno || 0}`);
-});
-
-function logDiagnosticError(message) {
-    const logDiv = document.getElementById("diagnostic-log");
-    const logList = document.getElementById("log-list");
-    if (logDiv && logList) {
-        logDiv.style.display = "block";
-        const li = document.createElement("li");
-        li.textContent = message;
-        logList.appendChild(li);
-    }
-}
-
-// ================================
 // FREE IMAGE GENERATOR (POLLINATIONS AI)
 // ================================
 const generateForm = document.querySelector(".generate-form");
@@ -116,14 +98,13 @@ function updateCardWithImage(index, url) {
     // We remove the class inside the onload event of the image element as soon as it's fully rendered by the browser!
     card.innerHTML = `
         <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" onload="document.getElementById('img-${index}').classList.remove('loading')" onerror="retryImageLoad(this, ${index}, 3)" />
-        <button onclick="downloadImage('${url}', ${index})">Download</button>
+        <button class="download-btn" onclick="downloadImage('${url}', ${index})" title="Download Image">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </button>
     `;
 }
 
 function retryImageLoad(img, index, retriesLeft) {
-    // Log the failure to the diagnostic box so we can check if it's blocked by client or server
-    logDiagnosticError(`Image ${index + 1} load failed. Attempting retry (${4 - retriesLeft}/3)...`);
-    
     if (retriesLeft > 0) {
         // Wait 3 seconds before retrying
         setTimeout(() => {
@@ -147,12 +128,10 @@ function retryImageLoad(img, index, retriesLeft) {
                 // Update the onerror attribute with one less retry
                 img.setAttribute('onerror', `retryImageLoad(this, ${index}, ${retriesLeft - 1})`);
             } catch (e) {
-                logDiagnosticError(`Retry setup failed for Image ${index + 1}: ${e.message}`);
                 updateCardWithError(index);
             }
         }, 3000);
     } else {
-        logDiagnosticError(`Image ${index + 1} failed after all retries.`);
         // Out of retries, show error state
         updateCardWithError(index);
     }
@@ -166,12 +145,11 @@ function updateCardWithError(index) {
     const card = document.getElementById(`img-${index}`);
     card.classList.remove("loading");
     card.innerHTML = `
-        <div class="status-text" style="color: #ff5555; padding: 10px; line-height: 1.4; font-size: 13px;">
-            Failed to load image ${index + 1}.<br>
-            <button class="retry-btn" onclick="generateSingleImage(${index})" style="margin-top: 10px; padding: 6px 12px; background: #3b82f6; border: none; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px; font-weight: bold; transition: background 0.2s;">Try Again</button>
-            <span style="font-size: 10px; color: #ff8888; display: block; margin-top: 8px;">
-                (If all images fail, wait 1 minute for rate limits to cool down)
-            </span>
+        <div class="status-text error-state" style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.5rem;"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <div style="font-size: 0.9rem; font-weight: 700; color: #f3f4f6; margin-bottom: 0.25rem;">Generation Failed</div>
+            <div style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-bottom: 1rem; max-width: 200px; line-height: 1.35;">Server timed out or rate limit reached.</div>
+            <button class="retry-btn" onclick="generateSingleImage(${index})" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25); transition: transform 0.2s, background 0.2s;">Try Again</button>
         </div>
     `;
 }
