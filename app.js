@@ -95,9 +95,9 @@ function createLoadingCard(index) {
 function updateCardWithImage(index, url) {
     const card = document.getElementById(`img-${index}`);
     // Keep the "loading" class on the card so it continues shimmering in the UI.
-    // We remove the class inside the onload event of the image element as soon as it's fully rendered by the browser!
+    // We set opacity: 0 initially to hide browser broken image icon/alt text while loading, and fade it in once loaded!
     card.innerHTML = `
-        <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" onload="document.getElementById('img-${index}').classList.remove('loading')" onerror="retryImageLoad(this, ${index}, 3)" />
+        <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" style="opacity: 0; transition: opacity 0.3s ease;" onload="this.style.opacity = 1; document.getElementById('img-${index}').classList.remove('loading')" onerror="retryImageLoad(this, ${index}, 3)" />
         <button class="download-btn" onclick="downloadImage('${url}', ${index})" title="Download Image">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         </button>
