@@ -51,6 +51,7 @@
                                 <option value="openjourney">Openjourney</option>
                             </select>
                         </div>
+                        <p class="model-info-text" style="font-size: 11px; color: #9ca3af; margin-top: 8px; line-height: 1.4; min-height: 32px; text-align: left;"></p>
                     </div>
 
                     <div class="control-group">
@@ -124,6 +125,74 @@
                     <div class="feature-icon"></div>
                     <h3>Precision Control</h3>
                     <p>Fine-tune your results with aspect ratios, model selection, and detailed prompts to get exactly what you envision.</p>
+                </div>
+            </div>
+
+            <!-- Model Selection Guide -->
+            <div class="model-guide-section" style="margin-top: 4rem; text-align: left;">
+                <h3 style="text-align: center; margin-bottom: 2rem; font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg, #fff 0%, #a855f7 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Model Selection Guide</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(10px);">
+                        <h4 style="color: #8b5cf6; margin-top: 0; margin-bottom: 0.75rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>FLUX.1-dev</span> 
+                            <span style="font-size: 0.7rem; background: rgba(139, 92, 246, 0.15); color: #c084fc; padding: 3px 8px; border-radius: 20px; font-weight: 600;">Premium</span>
+                        </h4>
+                        <p style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5;">
+                            Our most advanced model. Ideal for photorealistic details, complex scene descriptions, and rendering clear embedded text inside images.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(10px);">
+                        <h4 style="color: #3b82f6; margin-top: 0; margin-bottom: 0.75rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>FLUX.1-schnell</span>
+                            <span style="font-size: 0.7rem; background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 3px 8px; border-radius: 20px; font-weight: 600;">Fast</span>
+                        </h4>
+                        <p style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5;">
+                            Optimized for speed. Generates draft concepts, simple prompts, and lightweight designs in a fraction of the time.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(10px);">
+                        <h4 style="color: #ec4899; margin-top: 0; margin-bottom: 0.75rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>Stable Diffusion XL</span>
+                            <span style="font-size: 0.7rem; background: rgba(236, 72, 153, 0.15); color: #f472b6; padding: 3px 8px; border-radius: 20px; font-weight: 600;">Artistic</span>
+                        </h4>
+                        <p style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5;">
+                            Superb for high-resolution digital art, anime, illustration styles, 3D renders, and cinematic composition concepts.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(10px);">
+                        <h4 style="color: #10b981; margin-top: 0; margin-bottom: 0.75rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>Stable Diffusion 3</span>
+                            <span style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 3px 8px; border-radius: 20px; font-weight: 600;">Modern</span>
+                        </h4>
+                        <p style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5;">
+                            Excellent prompt adherence. Best for complex prompts containing multiple subjects, distinct objects, and modern commercial realism.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(10px);">
+                        <h4 style="color: #a855f7; margin-top: 0; margin-bottom: 0.75rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>Openjourney</span>
+                            <span style="font-size: 0.7rem; background: rgba(168, 85, 247, 0.15); color: #c084fc; padding: 3px 8px; border-radius: 20px; font-weight: 600;">Vibe</span>
+                        </h4>
+                        <p style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5;">
+                            A fine-tuned model aimed at reproducing Midjourney-like high-aesthetic fantasy art, gorgeous lighting, and dramatic style vibes.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(10px);">
+                        <h4 style="color: #f59e0b; margin-top: 0; margin-bottom: 0.75rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>Stable Diffusion v1.5</span>
+                            <span style="font-size: 0.7rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 3px 8px; border-radius: 20px; font-weight: 600;">Legacy</span>
+                        </h4>
+                        <p style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5;">
+                            A classic fast model. Perfect for retro concepts, simple prompt structures, vintage aesthetics, and quick low-fidelity mockups.
+                        </p>
+                    </div>
+
                 </div>
             </div>
         </div>
