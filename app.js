@@ -245,24 +245,20 @@ async function downloadImage(url, index) {
 // ================================
 // DYNAMIC MODEL INFO
 // ================================
-const modelInfoText = document.querySelector(".model-info-text");
 const modelDescContent = document.querySelector(".model-desc-content");
 
 const modelDescriptions = {
-    'flux1-dev': '💡 <b>Best for:</b> Photorealistic details, complex scene descriptions, and rendering clear embedded text inside images.',
-    'flux1-schnell': '⚡ <b>Best for:</b> Fast, lightweight generations, draft concepts, and simple prompts.',
-    'stable-diffusion-xl': '🎨 <b>Best for:</b> High-resolution digital art, illustration, anime, and cinematic concept designs.',
-    'stable-diffusion-v15': '🎞️ <b>Best for:</b> Classic vintage styles, fast retro concepts, and simple, legacy prompt structures.',
-    'stable-diffusion-3': '🔬 <b>Best for:</b> Highly advanced prompt following, multiple subjects, and modern commercial realism.',
-    'openjourney': '🌌 <b>Best for:</b> Midjourney-style high-aesthetic fantasy art, gorgeous lighting, and cinematic style vibes.'
+    'flux1-dev': '<b>Best for:</b> Photorealistic details, complex scene descriptions, and rendering clear embedded text inside images.',
+    'flux1-schnell': '<b>Best for:</b> Fast, lightweight generations, draft concepts, and simple prompts.',
+    'stable-diffusion-xl': '<b>Best for:</b> High-resolution digital art, illustration, anime, and cinematic concept designs.',
+    'stable-diffusion-v15': '<b>Best for:</b> Classic vintage styles, fast retro concepts, and simple, legacy prompt structures.',
+    'stable-diffusion-3': '<b>Best for:</b> Highly advanced prompt following, multiple subjects, and modern commercial realism.',
+    'openjourney': '<b>Best for:</b> Midjourney-style high-aesthetic fantasy art, gorgeous lighting, and cinematic style vibes.'
 };
 
 function updateModelDescription() {
     const selected = modelSelect.value;
     const desc = modelDescriptions[selected] || '';
-    if (modelInfoText) {
-        modelInfoText.innerHTML = desc;
-    }
     if (modelDescContent) {
         modelDescContent.innerHTML = desc;
     }
