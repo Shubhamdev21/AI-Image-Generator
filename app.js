@@ -146,17 +146,37 @@ function retryImageLoad(img, index, retriesLeft) {
     }
 }
 
+let currentPrompt = "";
+let currentModel = "";
+let currentAspectRatio = "";
+
 function updateCardWithError(index) {
     const card = document.getElementById(`img-${index}`);
     card.classList.remove("loading");
     card.innerHTML = `
         <div class="status-text" style="color: #ff5555; padding: 10px; line-height: 1.4; font-size: 13px;">
             Failed to load image ${index + 1}.<br>
-            <span style="font-size: 11px; color: #ff8888; display: block; margin-top: 5px;">
-                (If all images fail, the free API is rate-limiting your IP. Please wait 1-2 minutes and try again)
+            <button class="retry-btn" onclick="generateSingleImage(${index})" style="margin-top: 10px; padding: 6px 12px; background: #3b82f6; border: none; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px; font-weight: bold; transition: background 0.2s;">Try Again</button>
+            <span style="font-size: 10px; color: #ff8888; display: block; margin-top: 8px;">
+                (If all images fail, wait 1 minute for rate limits to cool down)
             </span>
         </div>
     `;
+}
+
+async function generateSingleImage(index) {
+    const card = document.getElementById(`img-${index}`);
+    card.className = "img-card loading";
+    card.innerHTML = `<div class="status-text">Retrying image ${index + 1}...</div>`;
+
+    const { width, height } = getDimensions(currentAspectRatio);
+    const apiModel = modelMapping[currentModel] || "flux";
+    const seed = Math.floor(Math.random() * 1000000);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(currentPrompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
+
+    // Wait a brief delay to clear any active request
+    await sleep(200);
+    updateCardWithImage(index, imageUrl);
 }
 
 function updateButton(state) {
@@ -198,6 +218,11 @@ generateForm.addEventListener("submit", function (e) {
         alert("Please enter a valid prompt (at least 2 characters).");
         return;
     }
+
+    // Store values globally for individual "Try Again" retries
+    currentPrompt = prompt;
+    currentModel = model;
+    currentAspectRatio = aspectRatio;
 
     generateImages(prompt, quantity, model, aspectRatio);
 });
