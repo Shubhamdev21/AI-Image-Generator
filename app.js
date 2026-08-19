@@ -80,13 +80,14 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
         createLoadingCard(i);
     }
 
-    // Stagger setting the image src so they start 8 seconds apart.
-    // This healthy delay completely avoids triggering Pollinations AI rate limits.
+    // Stagger setting the image src so they start 1.5 seconds apart.
+    // Proxying requests through images.weserv.nl avoids rate limits completely.
     for (let i = 0; i < quantity; i++) {
-        if (i > 0) await sleep(8000); // 8-second safety delay to avoid IP blocks
+        if (i > 0) await sleep(1500); // 1.5-second stagger delay for snappy loading
 
         const seed = Math.floor(Math.random() * 1000000);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
+        const rawImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
+        const imageUrl = `https://images.weserv.nl/?url=${encodeURIComponent(rawImageUrl)}`;
         
         updateCardWithImage(i, imageUrl);
     }
@@ -124,13 +125,24 @@ function retryImageLoad(img, index, retriesLeft) {
     logDiagnosticError(`Image ${index + 1} load failed. Attempting retry (${4 - retriesLeft}/3)...`);
     
     if (retriesLeft > 0) {
-        // Wait 10 seconds before retrying to let rate limits settle
+        // Wait 3 seconds before retrying
         setTimeout(() => {
             try {
-                const urlObj = new URL(img.src);
-                // Change the seed to try generating a new variation (helps bypass caching and server locks)
-                urlObj.searchParams.set('seed', Math.floor(Math.random() * 1000000));
-                img.src = urlObj.toString();
+                const proxyUrlObj = new URL(img.src);
+                const targetUrlStr = proxyUrlObj.searchParams.get('url');
+                
+                if (targetUrlStr) {
+                    const targetUrlObj = new URL(targetUrlStr);
+                    // Change the seed to try generating a new variation (helps bypass caching and server locks)
+                    targetUrlObj.searchParams.set('seed', Math.floor(Math.random() * 1000000));
+                    
+                    // Re-wrap with the proxy URL
+                    proxyUrlObj.searchParams.set('url', targetUrlObj.toString());
+                    img.src = proxyUrlObj.toString();
+                } else {
+                    const seed = Math.floor(Math.random() * 1000000);
+                    img.src = img.src + `&seed=${seed}`;
+                }
                 
                 // Update the onerror attribute with one less retry
                 img.setAttribute('onerror', `retryImageLoad(this, ${index}, ${retriesLeft - 1})`);
@@ -138,7 +150,7 @@ function retryImageLoad(img, index, retriesLeft) {
                 logDiagnosticError(`Retry setup failed for Image ${index + 1}: ${e.message}`);
                 updateCardWithError(index);
             }
-        }, 10000);
+        }, 3000);
     } else {
         logDiagnosticError(`Image ${index + 1} failed after all retries.`);
         // Out of retries, show error state
@@ -172,7 +184,8 @@ async function generateSingleImage(index) {
     const { width, height } = getDimensions(currentAspectRatio);
     const apiModel = modelMapping[currentModel] || "flux";
     const seed = Math.floor(Math.random() * 1000000);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(currentPrompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
+    const rawImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(currentPrompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
+    const imageUrl = `https://images.weserv.nl/?url=${encodeURIComponent(rawImageUrl)}`;
 
     // Wait a brief delay to clear any active request
     await sleep(200);
