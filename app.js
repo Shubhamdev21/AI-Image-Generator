@@ -11,14 +11,14 @@ const aspectRatioSelect = document.querySelector(".aspect-ratio");
 
 let isGenerating = false;
 
-// Map HTML model values to Pollinations AI model names
+// Map HTML model values to the highly stable and fast Pollinations AI 'flux' cluster
 const modelMapping = {
     'flux1-dev': 'flux',
     'flux1-schnell': 'flux',
     'stable-diffusion-xl': 'flux',
-    'stable-diffusion-v15': 'dreamshaper',
+    'stable-diffusion-v15': 'flux', // Revert to flux for speed and rate limit reliability
     'stable-diffusion-3': 'flux',
-    'openjourney': 'midijourney'
+    'openjourney': 'flux' // Revert to flux for speed and rate limit reliability
 };
 
 // Calculate pixel dimensions from aspect ratio options (optimized for speed and rate limits)
@@ -62,10 +62,10 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
         createLoadingCard(i);
     }
 
-    // Stagger setting the image src so they generate in parallel but start 1 second apart.
-    // This allows the browser to show loading progress natively and display images instantly as they load.
+    // Stagger setting the image src so they start 3.5 seconds apart.
+    // This healthy delay completely avoids triggering Pollinations AI rate limits.
     for (let i = 0; i < quantity; i++) {
-        if (i > 0) await sleep(1000); // 1-second delay to stagger requests and avoid rate limits
+        if (i > 0) await sleep(3500); // 3.5-second safety delay to avoid IP blocks
 
         const seed = Math.floor(Math.random() * 1000000);
         const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
@@ -103,7 +103,7 @@ function updateCardWithImage(index, url) {
 
 function retryImageLoad(img, index, retriesLeft) {
     if (retriesLeft > 0) {
-        // Wait 2.5 seconds before retrying to let rate limits settle
+        // Wait 5 seconds before retrying to let rate limits settle
         setTimeout(() => {
             const urlObj = new URL(img.src);
             // Change the seed to try generating a new variation (helps bypass caching and server locks)
@@ -112,7 +112,7 @@ function retryImageLoad(img, index, retriesLeft) {
             
             // Update the onerror attribute with one less retry
             img.setAttribute('onerror', `retryImageLoad(this, ${index}, ${retriesLeft - 1})`);
-        }, 2500);
+        }, 5000);
     } else {
         // Out of retries, show error state
         updateCardWithError(index);
