@@ -1,4 +1,22 @@
 // ================================
+// DIAGNOSTIC ERROR LOGGER
+// ================================
+window.addEventListener("error", function (e) {
+    logDiagnosticError(`Runtime Error: ${e.message} at ${e.filename || 'script'}:${e.lineno || 0}`);
+});
+
+function logDiagnosticError(message) {
+    const logDiv = document.getElementById("diagnostic-log");
+    const logList = document.getElementById("log-list");
+    if (logDiv && logList) {
+        logDiv.style.display = "block";
+        const li = document.createElement("li");
+        li.textContent = message;
+        logList.appendChild(li);
+    }
+}
+
+// ================================
 // FREE IMAGE GENERATOR (POLLINATIONS AI)
 // ================================
 const generateForm = document.querySelector(".generate-form");
@@ -102,18 +120,27 @@ function updateCardWithImage(index, url) {
 }
 
 function retryImageLoad(img, index, retriesLeft) {
+    // Log the failure to the diagnostic box so we can check if it's blocked by client or server
+    logDiagnosticError(`Image ${index + 1} load failed. Attempting retry (${4 - retriesLeft}/3)...`);
+    
     if (retriesLeft > 0) {
         // Wait 5 seconds before retrying to let rate limits settle
         setTimeout(() => {
-            const urlObj = new URL(img.src);
-            // Change the seed to try generating a new variation (helps bypass caching and server locks)
-            urlObj.searchParams.set('seed', Math.floor(Math.random() * 1000000));
-            img.src = urlObj.toString();
-            
-            // Update the onerror attribute with one less retry
-            img.setAttribute('onerror', `retryImageLoad(this, ${index}, ${retriesLeft - 1})`);
+            try {
+                const urlObj = new URL(img.src);
+                // Change the seed to try generating a new variation (helps bypass caching and server locks)
+                urlObj.searchParams.set('seed', Math.floor(Math.random() * 1000000));
+                img.src = urlObj.toString();
+                
+                // Update the onerror attribute with one less retry
+                img.setAttribute('onerror', `retryImageLoad(this, ${index}, ${retriesLeft - 1})`);
+            } catch (e) {
+                logDiagnosticError(`Retry setup failed for Image ${index + 1}: ${e.message}`);
+                updateCardWithError(index);
+            }
         }, 5000);
     } else {
+        logDiagnosticError(`Image ${index + 1} failed after all retries.`);
         // Out of retries, show error state
         updateCardWithError(index);
     }
@@ -122,7 +149,14 @@ function retryImageLoad(img, index, retriesLeft) {
 function updateCardWithError(index) {
     const card = document.getElementById(`img-${index}`);
     card.classList.remove("loading");
-    card.innerHTML = `<div class="status-text" style="color: red;">Failed to load image ${index + 1}. Please try again.</div>`;
+    card.innerHTML = `
+        <div class="status-text" style="color: #ff5555; padding: 10px; line-height: 1.4; font-size: 13px;">
+            Failed to load image ${index + 1}.<br>
+            <span style="font-size: 11px; color: #ff8888; display: block; margin-top: 5px;">
+                (If all images fail, the free API is rate-limiting your IP. Please wait 1-2 minutes and try again)
+            </span>
+        </div>
+    `;
 }
 
 function updateButton(state) {
