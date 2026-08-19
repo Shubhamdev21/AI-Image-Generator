@@ -62,23 +62,23 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
         createLoadingCard(i);
     }
 
-    // Generate and load all images concurrently to significantly speed up loading times
-    const promises = Array.from({ length: quantity }).map(async (_, i) => {
+    // Generate sequentially to respect Pollinations AI rate limits and avoid 429 errors
+    for (let i = 0; i < quantity; i++) {
         try {
-            // Slight delay before launching each request to stagger them and avoid rate limits
-            await sleep(i * 150);
-
             const seed = Math.floor(Math.random() * 1000000);
             const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${apiModel}&seed=${seed}&nologo=true`;
 
-            await preloadImage(imageUrl);
+            // Preload with retry logic in case of temporary rate limit or network error
+            await preloadImageWithRetry(imageUrl);
             updateCardWithImage(i, imageUrl);
+
+            // Small safety delay between sequential generations
+            if (i < quantity - 1) await sleep(600);
+
         } catch (err) {
             updateCardWithError(i);
         }
-    });
-
-    await Promise.all(promises);
+    }
 
     updateButton(false);
     isGenerating = false;
@@ -88,7 +88,7 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ================================
-// PRELOAD IMAGE
+// PRELOAD IMAGE WITH RETRY
 // ================================
 function preloadImage(url) {
     return new Promise((resolve, reject) => {
@@ -97,6 +97,18 @@ function preloadImage(url) {
         img.onerror = reject;
         img.src = url;
     });
+}
+
+async function preloadImageWithRetry(url, retries = 3, delay = 2000) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            await preloadImage(url);
+            return;
+        } catch (err) {
+            if (attempt === retries) throw err;
+            await sleep(delay);
+        }
+    }
 }
 
 // ================================
