@@ -21,27 +21,27 @@ const modelMapping = {
     'openjourney': 'midijourney'
 };
 
-// Calculate pixel dimensions from aspect ratio options
+// Calculate pixel dimensions from aspect ratio options (optimized for speed and model compatibility)
 function getDimensions(aspectRatio) {
     switch (aspectRatio) {
         case "1:1":
-            return { width: 1024, height: 1024 };
+            return { width: 512, height: 512 };
         case "16:9":
-            return { width: 1280, height: 720 };
+            return { width: 768, height: 432 };
         case "9:16":
-            return { width: 720, height: 1280 };
+            return { width: 432, height: 768 };
         case "4:3":
-            return { width: 1024, height: 768 };
+            return { width: 640, height: 480 };
         case "3:4":
-            return { width: 768, height: 1024 };
+            return { width: 480, height: 640 };
         case "21:9":
-            return { width: 1280, height: 540 };
+            return { width: 800, height: 340 };
         case "3:2":
-            return { width: 1080, height: 720 };
+            return { width: 768, height: 512 };
         case "2:3":
-            return { width: 720, height: 1080 };
+            return { width: 512, height: 768 };
         default:
-            return { width: 1024, height: 1024 };
+            return { width: 512, height: 512 };
     }
 }
 
@@ -72,8 +72,8 @@ async function generateImages(prompt, quantity, model, aspectRatio) {
             await preloadImageWithRetry(imageUrl);
             updateCardWithImage(i, imageUrl);
 
-            // Small safety delay between sequential generations
-            if (i < quantity - 1) await sleep(600);
+            // Safety delay between sequential generations to allow the server to settle
+            if (i < quantity - 1) await sleep(2000);
 
         } catch (err) {
             updateCardWithError(i);
