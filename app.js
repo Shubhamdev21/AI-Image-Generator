@@ -98,7 +98,7 @@ function updateCardWithImage(index, url) {
     // We set opacity: 0 initially to hide browser broken image icon/alt text while loading, and fade it in once loaded!
     card.innerHTML = `
         <div id="loader-${index}" class="status-text" style="position: absolute; z-index: 1; text-align: center; color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; padding: 1rem; width: 100%; box-sizing: border-box;">
-            &#10024; Generating image ${index + 1}...<br>
+            Generating image ${index + 1}...<br>
             <span style="font-size: 0.75rem; opacity: 0.7; display: block; margin-top: 5px;">(Please wait 30-40 seconds)</span>
         </div>
         <img src="${url}" alt="Generated image ${index + 1}" loading="lazy" style="opacity: 0; transition: opacity 0.3s ease; position: relative; z-index: 2;" onload="hideLoader(${index}, this)" onerror="retryImageLoad(this, ${index}, 3)" />
